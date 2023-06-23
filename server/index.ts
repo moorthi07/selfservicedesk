@@ -17,8 +17,8 @@
  */
 
 import * as dotenv from 'dotenv';
-import { dialogflow } from './dialogflow';
-import { speech } from './speech';
+// import { dialogflow } from './dialogflow';
+// import { speech } from './speech';
 import * as socketIo from 'socket.io';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -26,6 +26,9 @@ import * as http from 'http';
 import * as express from 'express';
 import * as cors from 'cors';
 import * as sourceMapSupport from 'source-map-support';
+import FormData from "form-data"
+import axios from 'axios';
+
 
 const ss = require('socket.io-stream');
 
@@ -33,12 +36,12 @@ dotenv.config();
 sourceMapSupport.install();
 
 export class App {
-    public static readonly PORT:number = parseInt(process.env.PORT) || 8080;
+    public static readonly PORT: number = parseInt(process.env.PORT) || 8080;
     private app: express.Application;
     private server: http.Server;
     private io: SocketIO.Server;
     public socketClient: SocketIO.Server;
-    
+
     constructor() {
         this.createApp();
         this.createServer();
@@ -50,19 +53,19 @@ export class App {
         this.app = express();
         this.app.use(cors());
         this.app.set('trust proxy', true);
-  
-        this.app.use(function(req: any, res: any, next: any) {
-            res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        // this.app.use('/', express.static(path.join(__dirname, '../dist/public')));
+        // this.app.use(function(req: any, res: any, next: any) {
+        //     // res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 
-            if (req.secure) {
-                // request was via https, so do no special handling
-                next();
-            } else {
-                    // request was via http, so redirect to https
-                    res.redirect('https://' + req.headers.host + req.url);
-            }
+        //     // if (req.secure) {
+        //     //     // request was via https, so do no special handling
+        //     //     next();
+        //     // } else {
+        //     //         // request was via http, so redirect to https
+        //     //         res.redirect('https://' + req.headers.host + req.url);
+        //     // }
 
-        });
+        // });
         this.app.use('/', express.static(path.join(__dirname, '../dist/public')));
     }
 
@@ -98,20 +101,122 @@ export class App {
             });*/
 
             // DF detect stream call
-            ss(client).on('stream', function(stream: any, data: any) {
+            ss(client).on('stream', async function (stream: any, data: any) {
                 var filename = path.basename(data.name);
                 stream.pipe(fs.createWriteStream(filename));
-                dialogflow.detectIntentStream(stream, function(results: any){
-                    me.socketClient.emit('results', results);
-                });
+
+                // const task = req.body.task || 'transcribe';
+                // const language = req.body.language || null;
+                // const initial_prompt = req.body.initial_prompt || null;
+                // const audio_file = req.files.audio_file;
+                // const encode = req.body.encode || true;
+                // const output = req.body.output || 'txt';
+                // const word_timestamps = req.body.word_timestamps || false;
+
+
+                // interface config{
+                //     method: string;
+                //     headers: object;
+
+                // }
+
+                interface FormData1 {
+                    task: string;
+                    language: string | null;
+                    initial_prompt: string | null;
+                    audio_file: any;
+                    encode: boolean;
+                    output: string;
+                    word_timestamps: boolean;
+                }
+
+                const formData: FormData1 = {
+                    task: 'transcribe',
+                    language: null,
+                    initial_prompt: null,
+                    audio_file: stream,
+                    encode: true,
+                    output: 'txt',
+                    word_timestamps: false
+                };
+
+
+
+                // const options: AxiosRequestConfig<config> = {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'multipart/form-data' },
+                // };
+
+                const task = 'transcribe';
+                const language = '';
+                const initial_prompt = '';
+                // const audio_file = req.files.audio_file;
+                const encode = true;
+                const output = 'json';
+                const word_timestamps = false;
+                const audio = stream;
+                // const result = await transcribe(audio, task, language, initial_prompt, word_timestamps, output);
+
+                const url = `https://whisper-asr-webservice-whisperasr.bunnyenv.com/asr`;
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+
+                let data1 = new FormData();
+                data1.append('audio_file', fs.createReadStream('/Users/sendur/Downloads/stream.wav'));
+
+                let config = {
+                    method: 'post',
+                    maxBodyLength: Infinity,
+                    url: 'https://whisper-asr-webservice-whisperasr.bunnyenv.com/asr?method=openai-whisper&task=transcribe&encode=true&output=json',
+                    headers: {
+                        'accept': 'application/json',
+                        ...data1.getHeaders()
+                    },
+                    data: data1
+                };
+
+                axios.request(config)
+                    .then((response) => {
+                        console.log(JSON.stringify(response.data));
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+
+
+                // if (response.status === 200) {
+                //     const data = await response.data();
+                //     me.socketClient.emit('results', data);
+                // } else {
+                //     me.socketClient.emit('error', response.statusText);
+                // }
+
+
+
+                // await axios.post(url, formData  )
+                // .then((response) => {
+                //     if (response.status === 200) {
+                //         const data1 =   response.data ;
+                //           me.socketClient.emit('results', data1);
+                //     } else {
+                //         me.socketClient.emit('error', response.statusText);
+                //     }
+                // })
+                // .catch((error) => {
+                //     console.error(  error);
+                // });
+                // dialogflow.detectIntentStream(stream, function(results: any){
+                //     me.socketClient.emit('results', results);
+                // });
             });
 
             // TTS call
-            client.on('tts', function(obj: any) {
+            client.on('tts', function (obj: any) {
                 console.log(obj);
-                speech.textToSpeech(obj.text).then(function(audio: AudioBuffer){
-                    me.socketClient.emit('audio', audio);
-                }).catch(function(e: any) { console.log(e); })
+                // speech.textToSpeech(obj.text).then(function(audio: AudioBuffer){
+                //     me.socketClient.emit('audio', audio);
+                // }).catch(function(e: any) { console.log(e); })
             });
         });
     }

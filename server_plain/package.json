@@ -1,19 +1,16 @@
 {
   "name": "selfservicedesk-api",
-  "version": "1.0.0",
-  "author": "Lee Boonstra",
+  "version": "1.0.1",
+  "author": "indo-mars",
   "license": "Apache-2.0",
-  "description": "Code sample for STT/Dialogflow app back-end.",
+  "description": "Code sample for STT/whisper app back-end.",
   "engines": {
     "node": ">=10.9.0 <13.0.0",
     "yarn": ">=1.17.3 <=1.19.1"
   },
   "scripts": {
     "start": "node dist/index.js",
-    "watch": "nodemon --watch \"**/*.ts\" --exec \"ts-node  \"   index.ts",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "build": "tsc -p .",
-    "plain": "nodemon --watch  --exec \"node  \"  server.js"
+    "watch": "nodemon --watch  --exec    server.js"
   },
   "private": true,
   "type": "module",
