@@ -233,9 +233,9 @@ Thumbs.db
 
 # only check-in Typescript files
 
-*.wav
-*.js
-*.map
-!client/src/assets/*.js
-!examples/*.js
+# *.wav
+# *.js
+# *.map
+# !client/src/assets/*.js
+# !examples/*.js
 

@@ -70,7 +70,7 @@ io.on("connect", (client) => {
     const word_timestamps = false;
     const audio = stream;
     // const result = await transcribe(audio, task, language, initial_prompt, word_timestamps, output);
-
+console.log(audio);
     const body = {
       task,
       language,
@@ -96,9 +96,10 @@ io.on("connect", (client) => {
     // },
     // });
 
-test
-    let data1 = new FormData();
-    data1.append('audio_file', fs.createReadStream('/Users/sendur/Downloads/stream.wav'));
+ 
+    let formdata = new FormData();
+    // formdata.append('audio_file', fs.createReadStream('/Users/sendur/Downloads/stream.wav'));
+    formdata.append('audio_file', fs.createReadStream(audio));
 
     let config = {
         method: 'post',
@@ -108,7 +109,7 @@ test
             'accept': 'application/json',
             ...data1.getHeaders()
         },
-        data: data1
+        data: formdata
     };
 
     await axios.request(config)
