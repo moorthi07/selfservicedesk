@@ -57,19 +57,5 @@ import axios from 'axios';
 //   console.log(error);
 // }); 
 // ------------------
-const apiKey =  "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"; //process.env.OPENAI_API_KEY || 
-const client = axios.create({
-    headers: { 'Authorization': 'Bearer ' + apiKey }
-});
 
-const params = {
-  "prompt": "Once upon a time  he says come she says no - convert this into oscars standard screenplay without any addition to the story", 
-  "max_tokens": 10
-}
-
-client.post('https://api.openai.com/v1/chat/completions', params)
-  .then(result => {
-    console.log(params.prompt + result.data.choices[0].text);
-}).catch(err => {
-  console.log(err.message);
-});
+ 
